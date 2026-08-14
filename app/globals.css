@@ -5,3 +5,4 @@
 @media(max-width:390px){.status{display:none}.metrics{grid-template-columns:1fr 1fr;row-gap:16px}.schedule span{font-size:10px}.chart-legend{gap:7px 12px}.chart-wrap{height:155px}.section-head>span{font-size:9px}.tr{gap:14px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
 .position-badge.no-op{color:var(--muted)}.decision-reason{max-width:210px;line-height:1.35}
+.metrics{grid-template-columns:repeat(5,1fr)}.no-op-metric strong{color:#c5ced0}@media(max-width:760px){.metrics{grid-template-columns:repeat(3,1fr);row-gap:16px}}@media(max-width:390px){.metrics{grid-template-columns:1fr 1fr}}
