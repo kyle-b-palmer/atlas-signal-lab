@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-08-15T05:55:55.787818+00:00",
+  "generated_at_utc": "2026-08-15T06:29:45.473163+00:00",
   "title": "Frozen 12\u20131 Momentum Replication",
   "decision": "FAIL \u2014 DO NOT IMPLEMENT",
   "decision_short": "Not viable",
@@ -333,6 +333,127 @@
     {
       "gate": "Drawdown is no worse than SPY",
       "passed": false
+    }
+  ],
+  "failed_families": [
+    {
+      "name": "Explosive-mover continuation",
+      "status": "REJECTED",
+      "tested": "5,178 daily proxy rules plus Norgate replication",
+      "result": "0 rules passed the out-of-sample screen; Norgate mean net was about -0.60% across 11,765 test events.",
+      "why": "Large-target hit rates did not overcome stops, costs, or weak out-of-sample means."
+    },
+    {
+      "name": "Daily confirmation after an explosive move",
+      "status": "REJECTED",
+      "tested": "16 prespecified confirmation combinations; 2018\u20132022 selection and 2023+ evaluation",
+      "result": "The selected confirmation rule remained negative after delayed entry and costs.",
+      "why": "Confirmation reduced the sample without producing positive expectancy."
+    },
+    {
+      "name": "Opening drop and one-minute rebound",
+      "status": "REJECTED",
+      "tested": "0.5% rolling drops, 10\u201320 minute windows, rebound confirmation, target/stop and sector variants",
+      "result": "2,723 confirmed trades averaged about -0.11% net with a roughly -0.60% median.",
+      "why": "The visible rebound was generally smaller than realistic friction."
+    },
+    {
+      "name": "Bar anatomy, gaps, wicks and market regime",
+      "status": "REJECTED",
+      "tested": "2,202 combinations with train/test, positive-year and Bonferroni gates",
+      "result": "0 of 2,202 combinations passed.",
+      "why": "Selected training patterns did not generalize consistently."
+    },
+    {
+      "name": "SIRS historical same-day close",
+      "status": "EXPLORATORY ONLY",
+      "tested": "2023\u20132025 Massive five-minute bars; 372 trades; 10 bps round trip",
+      "result": "+0.055% mean but negative median, +7.94% compounded and -41.54% drawdown.",
+      "why": "Current-universe survivorship bias and unstable annual performance prevent validation."
+    },
+    {
+      "name": "SIRS timing and exit variants",
+      "status": "REJECTED",
+      "tested": "340 matched configurations across 10:30, 11:00, noon, 15:00 and multiple exit policies",
+      "result": "Only next-open variants passed mechanically; fixed targets, brackets, trailing stops and multi-day closes failed.",
+      "why": "The remaining 11:00/next-open candidate was concentrated and weakened under PIT universe tests."
+    },
+    {
+      "name": "C2 expanded point-in-time top-500",
+      "status": "REJECTED",
+      "tested": "248 trades in 2024\u20132025 with C2 ranking and exit unchanged",
+      "result": "+0.258% mean but -31.05% drawdown; materially weaker than the original snapshot control.",
+      "why": "Broader coverage added weaker selections rather than more alpha."
+    },
+    {
+      "name": "C2 top-300 liquidity lockbox",
+      "status": "REJECTED",
+      "tested": "Five variants selected on 2024; one locked 2025 evaluation",
+      "result": "2024 compounded +51.99%; locked 2025 compounded -1.91% with -30.15% drawdown.",
+      "why": "The development winner did not generalize."
+    },
+    {
+      "name": "Turnover and overnight drift",
+      "status": "EXPLORATORY ONLY",
+      "tested": "High/low turnover momentum and reversal plus overnight/following-intraday decomposition",
+      "result": "Small overnight means appeared in some cells, but p-values and year stability were insufficient.",
+      "why": "Effects changed sign by period and the following intraday leg was often negative."
+    },
+    {
+      "name": "FDA approval drift",
+      "status": "REJECTED",
+      "tested": "75 mapped official events; 1\u201320 day horizons; SPY/matched controls; 40 bps",
+      "result": "Mean net results were negative; the 20-day mean was about -1.20%.",
+      "why": "Broad approval buying underperformed and event timestamps were date-level only."
+    },
+    {
+      "name": "Government contract drift",
+      "status": "REJECTED",
+      "tested": "1,667 events with multi-day outcomes and SPY comparison",
+      "result": "20-day mean about +0.60%, but excess versus SPY about -0.72%.",
+      "why": "It failed the benchmark and publication dates can lag the actual award."
+    },
+    {
+      "name": "SEC filing overlays",
+      "status": "REJECTED",
+      "tested": "4,505 principal filing events plus financing, Form 4 and catalyst variants",
+      "result": "Principal overlay mean net about -1.40%; confidence interval entirely negative.",
+      "why": "Filings did not explain a positive continuation edge."
+    },
+    {
+      "name": "Adaptive price/volume model",
+      "status": "REJECTED",
+      "tested": "2023 feature selection and 292 later walk-forward events",
+      "result": "+0.87% mean, -10.25% median, bootstrap interval -0.96% to +2.77%.",
+      "why": "A positive but concentrated mean masked a severely negative median and uncertain edge."
+    },
+    {
+      "name": "52-week-high and alternate momentum horizons",
+      "status": "REJECTED",
+      "tested": "Monthly formation horizons, 52-week high, spread, delay and risk-overlay comparisons",
+      "result": "52-week-high returned roughly 5% annualized and failed to beat equal weight; other variants were unstable.",
+      "why": "Early universes were survivorship-biased and no alternative displaced simpler controls robustly."
+    },
+    {
+      "name": "Weekly factors and benchmark-aware allocators",
+      "status": "EXPLORATORY ONLY",
+      "tested": "Weekly/monthly factor screens, walk-forward allocation, trend, breadth and benchmark-aware variants",
+      "result": "Some windows outperformed, but no result survived a consistent universe, cost model and chronology.",
+      "why": "Incompatible old test setups and forced allocations make the results non-confirmatory."
+    },
+    {
+      "name": "Unified L contraction breakout",
+      "status": "PARKED",
+      "tested": "Counts-only feasibility under the frozen daily manifest",
+      "result": "Only 100 independent events versus the required 200.",
+      "why": "The exact definition lacked enough observations for an outcome test."
+    },
+    {
+      "name": "Unified N recurring shock",
+      "status": "REJECTED",
+      "tested": "Counts-only feasibility requiring 30 prior comparable shocks",
+      "result": "Zero qualifying events.",
+      "why": "The exact frozen recurrence requirement eliminated the entire sample."
     }
   ],
   "whole_share": {
