@@ -1,12 +1,13 @@
 {
   "asOf": "2026-08-16",
   "decisions": [],
-  "generatedAt": "2026-08-17T00:59:29.713331+00:00",
+  "generatedAt": "2026-08-17T01:16:52.710399+00:00",
   "holdoutStatus": "Pending sealed evaluation after 2026-10-27",
   "models": [
     {
       "color": "#5eead4",
       "compounded": null,
+      "discoveryStatus": "QUALIFIED",
       "drawdown": null,
       "entry": "Next open",
       "exit": "H20 close",
@@ -16,6 +17,12 @@
         "Paper entry is the next eligible official open; no real order is placed."
       ],
       "family": "fundamental_acceleration",
+      "historicalCiLower": 0.02167136386775989,
+      "historicalCiUpper": 0.0524542168160472,
+      "historicalMeanNetReturn": 0.03732715458430622,
+      "historicalProfitFactor": 2.1278876783734075,
+      "historicalTrades": 411,
+      "holmPvalue": 0.0004999750012499375,
       "horizon_sessions": 20,
       "id": "V3_FA_H20_EOD",
       "label": "V3 \u00b7 Fundamental acceleration \u00b7 20 sessions",
@@ -34,6 +41,7 @@
     {
       "color": "#2dd4bf",
       "compounded": null,
+      "discoveryStatus": "QUALIFIED",
       "drawdown": null,
       "entry": "Next open",
       "exit": "H60 close",
@@ -43,6 +51,12 @@
         "Paper entry is the next eligible official open; no real order is placed."
       ],
       "family": "fundamental_acceleration",
+      "historicalCiLower": 0.052465747364076144,
+      "historicalCiUpper": 0.11514080968798501,
+      "historicalMeanNetReturn": 0.0834886650386178,
+      "historicalProfitFactor": 2.3962155922434554,
+      "historicalTrades": 398,
+      "holmPvalue": 0.0004999750012499375,
       "horizon_sessions": 60,
       "id": "V3_FA_H60_EOD",
       "label": "V3 \u00b7 Fundamental acceleration \u00b7 60 sessions",
@@ -61,6 +75,7 @@
     {
       "color": "#60a5fa",
       "compounded": null,
+      "discoveryStatus": "QUALIFIED",
       "drawdown": null,
       "entry": "Next open",
       "exit": "H20 close",
@@ -70,6 +85,12 @@
         "Paper entry is the next eligible official open; no real order is placed."
       ],
       "family": "cash_flow_quality",
+      "historicalCiLower": 0.014538958026416181,
+      "historicalCiUpper": 0.03220764960992231,
+      "historicalMeanNetReturn": 0.0235872951031481,
+      "historicalProfitFactor": 1.9544165634312762,
+      "historicalTrades": 1385,
+      "holmPvalue": 0.0004999750012499375,
       "horizon_sessions": 20,
       "id": "V3_CFQ_H20_EOD",
       "label": "V3 \u00b7 Cash-flow quality \u00b7 20 sessions",
@@ -88,6 +109,7 @@
     {
       "color": "#818cf8",
       "compounded": null,
+      "discoveryStatus": "QUALIFIED",
       "drawdown": null,
       "entry": "Next open",
       "exit": "H60 close",
@@ -97,6 +119,12 @@
         "Paper entry is the next eligible official open; no real order is placed."
       ],
       "family": "cash_flow_quality",
+      "historicalCiLower": 0.0321709774196664,
+      "historicalCiUpper": 0.058187933171463584,
+      "historicalMeanNetReturn": 0.045388107771298335,
+      "historicalProfitFactor": 2.0232014890189483,
+      "historicalTrades": 1341,
+      "holmPvalue": 0.0004999750012499375,
       "horizon_sessions": 60,
       "id": "V3_CFQ_H60_EOD",
       "label": "V3 \u00b7 Cash-flow quality \u00b7 60 sessions",
