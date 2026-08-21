@@ -2,7 +2,7 @@
   "strategy": "K \u00b7 Confirmed abnormal-volume reclaim",
   "classification": "mixed_temporal_validation",
   "state": "FULLY_OPERATIONAL",
-  "last_successful_run": "2026-08-21T00:31:05.111942+00:00",
+  "last_successful_run": "2026-08-21T00:44:55.728141+00:00",
   "last_session": "2026-08-20",
   "new_signals": 0,
   "pending_entries": 0,
