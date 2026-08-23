@@ -55,11 +55,97 @@ function sirsGroup(s: Strategy) {
   return "Same-day SIRS";
 }
 
+function activeTestStrategy(model: LabModel) {
+  if (model.id === "DMAA_MACRO_MOMENTUM_v1") return "Ranks liquid ETFs on 12/6/3-month momentum with a 200-day trend and T-bill filter; holds the top two risk assets or cash.";
+  if (model.id === "K_CONFIRMED_ABNORMAL_VOLUME_RECLAIM") return "Buys a failed breakdown only after reclaim, abnormal volume, and next-session confirmation; forward paper monitor with results locked.";
+  if (model.id.includes("FA_H")) return "Financial-filing screen for accelerating revenue, stronger gross margin, and positive operating cash flow.";
+  if (model.id.includes("CFQ_H")) return "Financial-filing screen for positive earnings and cash flow that is strong relative to earnings and the prior year.";
+  if (model.id.includes("OL_H")) return "Financial-filing screen for operating leverage: operating income improves faster than revenue or turns positive.";
+  if (model.id.includes("DR_H")) return "Financial-filing screen for deleveraging: lower long-term debt, positive equity, and an adequate current ratio.";
+  if (model.id.includes("FCF_H")) return "Financial-filing screen for positive, improving free cash flow without declining revenue.";
+  const breadth = model.id.includes("BREADTH") ? " Adds the lagged market-breadth gate." : "";
+  return `Ranks qualifying stocks by relative strength versus SPY and the sector ETF, with VWAP, momentum, volume, and market/sector gates.${breadth}`;
+}
+
+function activeTestTimeframe(model: LabModel) {
+  if (model.id === "DMAA_MACRO_MOMENTUM_v1") return "Monthly rebalance; daily open-to-close paper marking";
+  if (model.id === "K_CONFIRMED_ABNORMAL_VOLUME_RECLAIM") return "Confirmed reclaim → following open → 10-session open";
+  if (model.kind === "eod") return `After-close filing → next open → ${model.exit}`;
+  return `${model.signal} signal → ${model.entry} → ${model.exit}`;
+}
+
+const failedFrames: Record<string, string> = {
+  "Explosive-mover continuation": "Daily proxy; next-session entry; 1–20+ sessions; +20/+30/+50% before -10%",
+  "Daily confirmation after an explosive move": "Daily confirmation; delayed next-session entry; multi-session exits",
+  "Opening drop and one-minute rebound": "1-/5-minute bars; 10–20-minute drop; next-bar entry to target/stop/time exit",
+  "Bar anatomy, gaps, wicks and market regime": "Daily/intraday conditions; +20/+30/+50% target paths and stop tests",
+  "SIRS historical same-day close": "2023–2025; 11:00 signal → 11:05 entry → 15:55 ET exit",
+  "SIRS timing and exit variants": "2023–2025; 10:30/11:00/noon/15:00 signals; same-day to 5-session exits",
+  "C2 expanded point-in-time top-500": "2024–2025; 11:00 signal → 11:05 entry → next regular open",
+  "C2 top-300 liquidity lockbox": "2024 development; locked 2025; 11:05 ET → next regular open",
+  "Turnover and overnight drift": "2018–2022 versus 2023+; overnight and following-intraday returns",
+  "FDA approval drift": "Next session plus 1-, 5-, 10-, and 20-session horizons",
+  "Government contract drift": "Next session and multi-day horizons through 20 sessions",
+  "SEC filing overlays": "Next-session and multi-day returns; same-day filings excluded",
+  "Adaptive price/volume model": "2023 feature selection followed by later walk-forward event outcomes",
+  "52-week-high and alternate momentum horizons": "Monthly formation with alternate momentum holding horizons",
+  "Weekly factors and benchmark-aware allocators": "Weekly and monthly portfolio formation / holding windows",
+  "Unified L contraction breakout": "Daily volatility contraction and breakout with multi-session exits",
+  "Unified N recurring shock": "Daily recurring-shock setup with multi-session drift horizon",
+};
+
+function failedStrategy(name: string) {
+  const rules: Record<string, string> = {
+    "Explosive-mover continuation": "Buy large price/volume movers and test whether large upside targets arrive before a 10% loss.",
+    "Daily confirmation after an explosive move": "Require a follow-through confirmation before entering an explosive mover.",
+    "Opening drop and one-minute rebound": "Buy an intraday rebound after an opening strength-and-drop pattern.",
+    "Bar anatomy, gaps, wicks and market regime": "Use gap, wick, close-location, and market-regime patterns to predict continuation.",
+    "SIRS historical same-day close": "Relative-strength intraday stock selection with a same-day close exit.",
+    "SIRS timing and exit variants": "Vary SIRS decision time, target/stop policy, and holding period.",
+    "C2 expanded point-in-time top-500": "Keep C2 rules but expand the point-in-time liquid stock universe.",
+    "C2 top-300 liquidity lockbox": "Keep C2 rules but restrict to a liquidity/volatility-qualified universe.",
+    "Turnover and overnight drift": "Trade price-volume turnover effects and post-event overnight drift.",
+    "FDA approval drift": "Buy broad FDA-approval events and test post-event drift or reversal.",
+    "Government contract drift": "Buy public-company government-contract events and test drift versus SPY.",
+    "SEC filing overlays": "Use SEC filings, financing, Form 4, and catalyst overlays on price events.",
+    "Adaptive price/volume model": "Select event trades with a walk-forward price/volume feature model.",
+    "52-week-high and alternate momentum horizons": "Use 52-week-high and alternate cross-sectional momentum rules.",
+    "Weekly factors and benchmark-aware allocators": "Allocate across factor portfolios with trend, breadth, and benchmark controls.",
+    "Unified L contraction breakout": "Trade a volatility contraction followed by a channel/range breakout.",
+    "Unified N recurring shock": "Trade a shock only when comparable prior shocks imply underreaction.",
+  };
+  return rules[name] ?? "See the recorded test description and retirement reason.";
+}
+
+function ActiveTestRegistry({models}: {models: LabModel[]}) {
+  return <section className="test-registry">
+    <div className="section-head"><div><p className="eyebrow">ACTIVE PAPER TESTS</p><h2>What each test is actually testing</h2></div><span>{models.length} active monitors</span></div>
+    <div className="registry-table">
+      <div className="registry-row registry-head"><span>Test</span><span>Strategy</span><span>Time frame</span><span>State</span></div>
+      {models.map(model => <div className="registry-row" key={model.id}>
+        <span data-label="Test"><b>{model.short}</b><small>{model.label}</small></span>
+        <span data-label="Strategy">{activeTestStrategy(model)}</span>
+        <span data-label="Time frame">{activeTestTimeframe(model)}</span>
+        <span data-label="State">{model.status}</span>
+      </div>)}
+    </div>
+  </section>;
+}
+
 function FailedFamilyArchive({families}: {families: FailedFamily[]}) {
   return <section className="failed-archive">
-    <div className="section-head"><div><p className="eyebrow">RETIRED RESEARCH</p><h2>Models that did not advance</h2></div><span>{families.length} families</span></div>
-    <div className="failed-grid">{families.map(f => <article key={f.name}><div className="failed-title"><h3>{f.name}</h3><i>{f.status}</i></div><dl><div><dt>TESTED</dt><dd>{f.tested}</dd></div><div><dt>RESULT</dt><dd>{f.result}</dd></div><div><dt>WHY IT STOPPED</dt><dd>{f.why}</dd></div></dl></article>)}</div>
-    <p className="archive-note">These studies are finished. They are not active paper models.</p>
+    <div className="section-head"><div><p className="eyebrow">RETIRED RESEARCH</p><h2>Every test that did not advance</h2></div><span>{families.length} families</span></div>
+    <div className="failed-table">
+      <div className="failed-row failed-head"><span>Test</span><span>Strategy</span><span>Tested time frame</span><span>Why it stopped</span><span>State</span></div>
+      {families.map(f => <div className="failed-row" key={f.name}>
+        <span data-label="Test"><b>{f.name}</b><small>{f.tested}</small></span>
+        <span data-label="Strategy">{failedStrategy(f.name)}</span>
+        <span data-label="Tested time frame">{failedFrames[f.name] ?? "See recorded methodology"}</span>
+        <span data-label="Why it stopped"><b>{f.result}</b><small>{f.why}</small></span>
+        <span data-label="State"><i>{f.status}</i></span>
+      </div>)}
+    </div>
+    <p className="archive-note">These studies are finished or parked. They are not active paper models; the detailed 12–1 momentum cost-stress scenarios remain above this register.</p>
   </section>;
 }
 
@@ -281,6 +367,8 @@ export default function Home() {
         <div className="line"><span>Latest refresh</span><b>{data.generatedAt}</b></div>
       </div>
     </section>
+
+    <ActiveTestRegistry models={labModels} />
 
     <section className="catalog-card">
       <div className="section-head">
