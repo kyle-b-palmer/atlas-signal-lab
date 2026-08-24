@@ -8,6 +8,7 @@ The page is one catalog of every active paper model:
 - Overnight SIRS: C2, C3, C5, C6
 - Macro: DMAA
 - Locked monitor: K
+- Monthly mega-cap momentum: P8 (original equal-weight plus 25% cap stress)
 - V3 filings: FA20, FA60, CFQ20, CFQ60
 - V5 filings: OL20, OL60, DR20, DR60, FCF20, FCF60
 

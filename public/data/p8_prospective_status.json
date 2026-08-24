@@ -1,0 +1,60 @@
+{
+  "generatedAt": "2026-08-24T05:09:52.746100+00:00",
+  "modelId": "P8_PERSISTENT_MEGACAP_MOMENTUM_PROSPECTIVE_V1",
+  "label": "P8 · Persistent mega-cap momentum",
+  "short": "P8",
+  "classification": "POST_HOC_PROSPECTIVE_PAPER_MONITOR",
+  "validated": false,
+  "paperOnly": true,
+  "liveOrdersAllowed": false,
+  "state": "WAITING_FOR_FIRST_MONTH_END",
+  "firstSignalDate": "2026-08-31",
+  "firstEntryDate": "2026-09-01",
+  "lastSession": "2026-08-21",
+  "signal": "Month-end close",
+  "entry": "Next regular open",
+  "exit": "Next monthly open",
+  "sessions": 0,
+  "completedPeriods": 0,
+  "openPositions": 0,
+  "noOps": 0,
+  "reviewGate": {
+    "first": 12,
+    "preferred": 24,
+    "remainingToFirst": 12
+  },
+  "baseline": {
+    "completed_periods": 0,
+    "account_value": 10000.0,
+    "compounded_return": 0.0,
+    "mean_period_return": null,
+    "median_period_return": null,
+    "win_rate": null,
+    "mean_excess_vs_spy": null,
+    "max_drawdown": null,
+    "currentPositions": [],
+    "cashWeight": 1.0
+  },
+  "cap25": {
+    "completed_periods": 0,
+    "account_value": 10000.0,
+    "compounded_return": 0.0,
+    "mean_period_return": null,
+    "median_period_return": null,
+    "win_rate": null,
+    "mean_excess_vs_spy": null,
+    "max_drawdown": null,
+    "currentPositions": [],
+    "cashWeight": 1.0
+  },
+  "decisions": [],
+  "equity": [],
+  "errors": [],
+  "explanation": [
+    "At each month-end, ranks point-in-time eligible U.S. common-stock issuers by a filing-dated market-cap proxy.",
+    "Selects issuers in the market-cap Top 20 that also rank in the top 20% on frozen 126-session Momentum and have remained Top 20 for at least three consecutive months.",
+    "Rebalances at the next regular-session open and holds until the following monthly rebalance. The primary account is equal-weight; a separate 25% position-cap account is tracked as a concentration stress.",
+    "This is forward paper monitoring of a post-hoc historical qualifier. It cannot place live orders and is not validated."
+  ],
+  "registrationHash": "8a15b695347f669fb662624435c9aab14f67ccd284e42b399e3976a08177c5cc"
+}

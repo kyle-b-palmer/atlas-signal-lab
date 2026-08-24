@@ -22,6 +22,30 @@ type ProspectiveStatus = {
   pending_entries: number; open_positions: number; completed_trades: number; trades_remaining: number;
   calendar_gate_date: string; days_remaining: number; aggregate_results_locked: boolean; errors: string[];
 };
+type P8Position = {
+  symbol: string; name: string; weight: number; entryDate: string; entryPrice: number;
+  currentDate: string; currentPrice: number; unrealizedReturn: number; marketCapRank: number;
+  momentumPercentile: number; leadershipTenureMonths: number;
+};
+type P8Decision = {
+  signalDate: string; rebalanceDate: string; status: "TRADE" | "NO_TRADE"; reason: string;
+  symbols: string[]; selectedCount: number; periodExitDate: string | null;
+  periodReturn: number | null; spyReturn: number | null;
+};
+type P8Account = {
+  completed_periods: number; account_value: number; compounded_return: number;
+  mean_period_return: number | null; median_period_return: number | null; win_rate: number | null;
+  mean_excess_vs_spy: number | null; max_drawdown: number | null; currentPositions: P8Position[]; cashWeight: number;
+};
+type P8Status = {
+  generatedAt: string; modelId: string; label: string; short: string; classification: string;
+  validated: boolean; paperOnly: boolean; liveOrdersAllowed: boolean; state: string;
+  firstSignalDate: string; firstEntryDate: string; lastSession: string | null;
+  signal: string; entry: string; exit: string; sessions: number; completedPeriods: number;
+  openPositions: number; noOps: number; reviewGate: {first: number; preferred: number; remainingToFirst: number};
+  baseline: P8Account; cap25: P8Account; decisions: P8Decision[]; equity: EquityPoint[];
+  errors: string[]; explanation: string[];
+};
 type EodDecision = {
   strategy: string; decisionDate: string; date: string; status: "TRADE" | "NO_TRADE";
   positionStatus: "NO_TRADE" | "PENDING_ENTRY" | "HELD" | "SOLD"; reason: string; symbol: string;
@@ -42,7 +66,7 @@ type EodData = {generatedAt: string; asOf: string; monitorId: string; paperOnly:
 type ResearchModel = {model: string; label: string; historical_screen: string; deployment_verdict: string; annualized_return: number; max_drawdown: number; ending_10000: number; note: string};
 type FailedFamily = {name: string; status: string; tested: string; result: string; why: string};
 type ResearchResult = {title: string; conclusion: string; period: string; months: number; price_source: string; universe: string; models: ResearchModel[]; gates: {gate: string; passed: boolean}[]; failed_families: FailedFamily[]; whole_share: {ending_10000: number; trades: number; gross_turnover_dollars: number; sleeves: number}};
-type LabModel = Strategy & {group: string; openPositions: number; kind: "intraday" | "eod" | "locked"};
+type LabModel = Strategy & {group: string; openPositions: number; kind: "intraday" | "eod" | "locked" | "monthly"};
 
 const fallback: DashboardData = {generatedAt: "Awaiting first forward session", headline: "Forward paper validation", strategies: [], trades: [], equity: []};
 const pct = (v: number | null, d = 2) => v == null ? "—" : `${v >= 0 ? "+" : ""}${(v * 100).toFixed(d)}%`;
@@ -58,6 +82,7 @@ function sirsGroup(s: Strategy) {
 function activeTestStrategy(model: LabModel) {
   if (model.id === "DMAA_MACRO_MOMENTUM_v1") return "Ranks liquid ETFs on 12/6/3-month momentum with a 200-day trend and T-bill filter; holds the top two risk assets or cash.";
   if (model.id === "K_CONFIRMED_ABNORMAL_VOLUME_RECLAIM") return "Buys a failed breakdown only after reclaim, abnormal volume, and next-session confirmation; forward paper monitor with results locked.";
+  if (model.id === "P8_PERSISTENT_MEGACAP_MOMENTUM_PROSPECTIVE_V1") return "Selects persistent U.S. market-cap leaders that are also in the top quintile of frozen 126-session Momentum; rebalances monthly at the next open.";
   if (model.id.includes("FA_H")) return "Financial-filing screen for accelerating revenue, stronger gross margin, and positive operating cash flow.";
   if (model.id.includes("CFQ_H")) return "Financial-filing screen for positive earnings and cash flow that is strong relative to earnings and the prior year.";
   if (model.id.includes("OL_H")) return "Financial-filing screen for operating leverage: operating income improves faster than revenue or turns positive.";
@@ -70,6 +95,7 @@ function activeTestStrategy(model: LabModel) {
 function activeTestTimeframe(model: LabModel) {
   if (model.id === "DMAA_MACRO_MOMENTUM_v1") return "Monthly rebalance; daily open-to-close paper marking";
   if (model.id === "K_CONFIRMED_ABNORMAL_VOLUME_RECLAIM") return "Confirmed reclaim → following open → 10-session open";
+  if (model.id === "P8_PERSISTENT_MEGACAP_MOMENTUM_PROSPECTIVE_V1") return "Month-end close → next open → following monthly open";
   if (model.kind === "eod") return `After-close filing → next open → ${model.exit}`;
   return `${model.signal} signal → ${model.entry} → ${model.exit}`;
 }
@@ -234,6 +260,47 @@ function History({strategy, trades}: {strategy: Pick<LabModel, "id" | "label" | 
   </article>;
 }
 
+function P8Monitor({data, capital}: {data: P8Status; capital: number}) {
+  const scale = capital / 10000;
+  return <section className="p8-monitor">
+    <div className="p8-head">
+      <div><p className="eyebrow">FORWARD MONTHLY PAPER MONITOR</p><h2>P8 · Persistent mega-cap momentum</h2><p>Historical results qualified only under the separately declared risk-tolerant screen. Forward results begin at zero; this panel cannot place orders.</p></div>
+      <div><span className="mixed-badge">{data.state.replaceAll("_", " ")}</span><small>First signal {data.firstSignalDate}</small></div>
+    </div>
+    <div className="p8-accounts">
+      <article><small>ORIGINAL EQUAL WEIGHT</small><strong>{money(data.baseline.account_value * scale)}</strong><span>{pct(data.baseline.compounded_return)} · {data.baseline.completed_periods} completed months</span><em>Up to full equal weight across qualifying names</em></article>
+      <article><small>25% POSITION CAP</small><strong>{money(data.cap25.account_value * scale)}</strong><span>{pct(data.cap25.compounded_return)} · {data.cap25.completed_periods} completed months</span><em>Residual allocation remains in zero-return cash</em></article>
+      <article><small>REVIEW GATE</small><strong>{data.completedPeriods} / {data.reviewGate.first}</strong><span>{data.reviewGate.remainingToFirst} completed months remaining</span><em>Preferred review after {data.reviewGate.preferred} months</em></article>
+    </div>
+    <div className="p8-section-head"><div><p className="eyebrow">CURRENT PAPER POSITIONS</p><h3>{data.baseline.currentPositions.length ? `${data.baseline.currentPositions.length} holdings` : "Waiting in cash"}</h3></div><span>Last session {data.lastSession ?? "Waiting"}</span></div>
+    <div className="p8-positions">
+      <div className="p8-position p8-th"><span>Symbol</span><span>Weight</span><span>Entry</span><span>Current</span><span>Return</span><span>Rank / tenure</span></div>
+      {data.baseline.currentPositions.map(position => <div className="p8-position" key={position.symbol}>
+        <span data-label="Symbol"><b>{position.symbol}</b><small>{position.name}</small></span>
+        <span data-label="Weight">{pct(position.weight)}</span>
+        <span data-label="Entry"><b>{money(position.entryPrice, 2)}</b><small>{position.entryDate}</small></span>
+        <span data-label="Current"><b>{money(position.currentPrice, 2)}</b><small>{position.currentDate}</small></span>
+        <span data-label="Return" className={position.unrealizedReturn >= 0 ? "up" : "down"}>{pct(position.unrealizedReturn)}</span>
+        <span data-label="Rank / tenure"><b>#{position.marketCapRank}</b><small>{position.leadershipTenureMonths} Top-20 months · momentum {pct(position.momentumPercentile, 0)}</small></span>
+      </div>)}
+      {!data.baseline.currentPositions.length && <div className="empty"><b>No paper position yet.</b><span>The first eligible month-end signal is {data.firstSignalDate}; any selections enter at the following regular-session open.</span></div>}
+    </div>
+    <div className="p8-section-head"><div><p className="eyebrow">MONTHLY AUDIT TRAIL</p><h3>Every signal and no-op</h3></div><span>{data.decisions.length} decisions</span></div>
+    <div className="p8-decisions">
+      <div className="p8-decision p8-th"><span>Signal</span><span>Rebalance</span><span>Selection</span><span>Status</span><span>Period return</span><span>vs SPY</span></div>
+      {[...data.decisions].reverse().map(decision => <div className="p8-decision" key={decision.signalDate}>
+        <span data-label="Signal">{decision.signalDate}</span><span data-label="Rebalance">{decision.rebalanceDate}</span>
+        <span data-label="Selection"><b>{decision.symbols.join(", ") || "Cash"}</b><small>{decision.selectedCount} qualifying issuers</small></span>
+        <span data-label="Status"><b className={`position-badge ${decision.status === "TRADE" ? "held" : "no-op"}`}>{decision.periodExitDate ? "SOLD / REBALANCED" : decision.status === "TRADE" ? "OPEN / PENDING" : "NO OP"}</b><small>{decision.reason}</small></span>
+        <span data-label="Period return" className={decision.periodReturn == null ? "" : decision.periodReturn >= 0 ? "up" : "down"}>{pct(decision.periodReturn)}</span>
+        <span data-label="vs SPY">{decision.periodReturn == null || decision.spyReturn == null ? "—" : pct(decision.periodReturn - decision.spyReturn)}</span>
+      </div>)}
+      {!data.decisions.length && <div className="empty"><b>No month-end decision yet.</b><span>The daily runner is connected and waiting for the first eligible formation date.</span></div>}
+    </div>
+    {!!data.errors.length && <div className="monitor-error">{data.errors.join(" · ")}</div>}
+  </section>;
+}
+
 function ResearchScoreboard({result, capital}: {result: ResearchResult; capital: number}) {
   return <section className="research-section">
     <div className="research-verdict"><div><p className="eyebrow">COMPLETED REPLICATION · {result.period}</p><span className="reject-badge">REJECTED FOR DEPLOYMENT</span><h2>{result.title}</h2><p>{result.conclusion}</p></div><div className="verdict-word">FAIL<small>DO NOT IMPLEMENT</small></div></div>
@@ -261,6 +328,7 @@ export default function Home() {
   const [help, setHelp] = useState<LabModel | null>(null);
   const [eodHelp, setEodHelp] = useState<EodModel | null>(null);
   const [prospective, setProspective] = useState<ProspectiveStatus | null>(null);
+  const [p8, setP8] = useState<P8Status | null>(null);
   const [eod, setEod] = useState<EodData | null>(null);
   const [v5Eod, setV5Eod] = useState<EodData | null>(null);
   const [research, setResearch] = useState<ResearchResult | null>(null);
@@ -269,6 +337,7 @@ export default function Home() {
 
   useEffect(() => { fetch("./data/dashboard.json", {cache: "no-store"}).then(r => r.ok ? r.json() : fallback).then(setData).catch(() => setData(fallback)); }, []);
   useEffect(() => { fetch("./data/k_prospective_status.json", {cache: "no-store"}).then(r => r.ok ? r.json() : null).then(setProspective).catch(() => setProspective(null)); }, []);
+  useEffect(() => { fetch("./data/p8_prospective_status.json", {cache: "no-store"}).then(r => r.ok ? r.json() : null).then(setP8).catch(() => setP8(null)); }, []);
   useEffect(() => { fetch("./data/v3-eod.json", {cache: "no-store"}).then(r => r.ok ? r.json() : null).then(setEod).catch(() => setEod(null)); }, []);
   useEffect(() => { fetch("./data/v5-eod.json", {cache: "no-store"}).then(r => r.ok ? r.json() : null).then(setV5Eod).catch(() => setV5Eod(null)); }, []);
   useEffect(() => { fetch("./data/momentum-validation.json", {cache: "no-store"}).then(r => r.ok ? r.json() : null).then(setResearch).catch(() => setResearch(null)); }, []);
@@ -300,6 +369,16 @@ export default function Home() {
     kind: "locked",
   } : null;
 
+  const p8Model: LabModel | null = p8 ? {
+    id: p8.modelId, label: p8.label, short: p8.short, color: "#f2bd69", phase: "frozen",
+    signal: p8.signal, entry: p8.entry, exit: p8.exit, explanation: p8.explanation,
+    sessions: p8.sessions, trades: p8.completedPeriods, noOps: p8.noOps,
+    mean: p8.baseline.mean_period_return, median: p8.baseline.median_period_return,
+    winRate: p8.baseline.win_rate, compounded: p8.baseline.compounded_return,
+    drawdown: p8.baseline.max_drawdown, status: p8.state.replaceAll("_", " "),
+    group: "Monthly leadership", openPositions: p8.openPositions, kind: "monthly",
+  } : null;
+
   const labModels = useMemo<LabModel[]>(() => {
     const intraday = data.strategies.map(s => ({...s, group: sirsGroup(s), openPositions: 0, kind: "intraday" as const}));
     const filings = eodModels.map(m => ({
@@ -311,8 +390,8 @@ export default function Home() {
       status: m.status, group: m.id.startsWith("V5_") ? "V5 filings" : "V3 filings",
       openPositions: m.openPositions, kind: "eod" as const,
     }));
-    return [...intraday, ...(lockedK ? [lockedK] : []), ...filings];
-  }, [data.strategies, eodModels, lockedK]);
+    return [...intraday, ...(lockedK ? [lockedK] : []), ...(p8Model ? [p8Model] : []), ...filings];
+  }, [data.strategies, eodModels, lockedK, p8Model]);
 
   const visible = useMemo(() => selectedModel ? labModels.filter(m => m.id === selectedModel) : labModels, [labModels, selectedModel]);
   const focused = labModels.find(m => m.id === selectedModel) ?? null;
@@ -327,16 +406,24 @@ export default function Home() {
         exitTime: d.exitTime ?? "", exitPrice: d.exitPrice, net: d.net, spy: null,
       }));
     }
+    if (p8) {
+      byId[p8.modelId] = p8.decisions.map(d => ({
+        strategy: p8.modelId, date: d.signalDate, status: d.status, reason: d.reason,
+        symbol: d.symbols.join(", "), sector: "Monthly leadership", entryTime: "Open",
+        entryPrice: null, exitTime: d.periodExitDate ? "Open" : "", exitPrice: null,
+        net: d.periodReturn, spy: d.spyReturn,
+      }));
+    }
     return byId;
-  }, [data, eodDecisions, eodModels]);
+  }, [data, eodDecisions, eodModels, p8]);
 
   const chartModels = useMemo<ChartModel[]>(() => visible.filter(m => m.kind !== "locked"), [visible]);
   const mergedEquity = useMemo<EquityPoint[]>(() => {
-    const series = [data.equity, eod?.equity ?? [], v5Eod?.equity ?? []];
+    const series = [data.equity, eod?.equity ?? [], v5Eod?.equity ?? [], p8?.equity ?? []];
     const dates = [...new Set(series.flatMap(x => x.map(p => p.date)))].sort();
     const latest = (points: EquityPoint[], date: string) => { let values: Record<string, number> = {}; for (const point of points) if (point.date <= date) values = point.values; return values; };
     return dates.map(date => ({date, values: Object.assign({}, ...series.map(points => latest(points, date)))}));
-  }, [data, eod, v5Eod]);
+  }, [data, eod, v5Eod, p8]);
 
   const ranked = visible.filter(s => s.trades > 0 && s.compounded != null).sort((a, b) => (b.compounded ?? -Infinity) - (a.compounded ?? -Infinity));
   const winner = ranked[0];
@@ -358,11 +445,11 @@ export default function Home() {
       <div>
         <p className="eyebrow">ALL ACTIVE MODELS</p>
         <h1>One table.<br /><em>One selected model.</em></h1>
-        <p className="lede">Every live paper model is listed below: V1–V2, C1–C6, DMAA, K, and the filing tests FA / CFQ / OL / DR / FCF. Click a row to see only that model’s card, chart, and decisions.</p>
+        <p className="lede">Every active paper model is listed below: V1–V2, C1–C6, DMAA, K, P8 monthly leadership, and the filing tests FA / CFQ / OL / DR / FCF. Click a row to see only that model’s card, chart, and decisions.</p>
       </div>
       <div className="next-card">
         <div className="next-head"><span>{focused ? "SELECTED" : "HOW TO READ THIS"}</span><b>ET</b></div>
-        {focused ? <div className="decision-times"><b>{focused.short}</b><span>{focused.signal} → {focused.entry} → {focused.exit}</span></div> : <ul className="read-guide"><li><b>Return</b> is completed paper P&amp;L, not a live account.</li><li><b>Frozen</b> means rules cannot change during collection.</li><li><b>K</b> hides performance until its gates are met.</li><li>Filing models enter next open and hold 20 or 60 sessions.</li></ul>}
+        {focused ? <div className="decision-times"><b>{focused.short}</b><span>{focused.signal} → {focused.entry} → {focused.exit}</span></div> : <ul className="read-guide"><li><b>Return</b> is completed paper P&amp;L, not a live account.</li><li><b>Frozen</b> means rules cannot change during collection.</li><li><b>K</b> hides performance until its gates are met.</li><li><b>P8</b> forms monthly and tracks original and 25%-capped allocations.</li><li>Filing models enter next open and hold 20 or 60 sessions.</li></ul>}
         <p>{focused ? focused.label : "Same-day SIRS exit near 15:55. Overnight SIRS exit at the next open."}</p>
         <div className="line"><span>Latest refresh</span><b>{data.generatedAt}</b></div>
       </div>
@@ -409,6 +496,8 @@ export default function Home() {
       <div className="prospective-foot"><span>Calendar gate: <b>{prospective.calendar_gate_date}</b></span><span>Last session: <b>{prospective.last_session ?? "Waiting"}</b></span></div>
     </section>}
 
+    {focused?.kind === "monthly" && p8 && <P8Monitor data={p8} capital={capital} />}
+
     {!!visible.filter(m => m.kind !== "locked").length && <section className="model-group">
       <div className="group-head"><p className="eyebrow">{focused ? "SELECTED MODEL" : "MODEL CARDS"}</p><span>{focused ? "Click the row again to return to the full list" : `${groups.length} families · cards match the table`}</span></div>
       <div className={`models ${visible.length > 4 && !focused ? "challengers" : ""}`}>
@@ -430,7 +519,7 @@ export default function Home() {
     {!!chartModels.length && <section className="allocation-section"><EquityChart equity={mergedEquity} strategies={chartModels} capital={capital} /></section>}
 
     <section className="histories">
-      {(focused ? visible : []).filter(m => m.kind !== "locked").map(s => <History key={s.id} strategy={s} trades={histories[s.id] || []} />)}
+      {(focused ? visible : []).filter(m => m.kind !== "locked" && m.kind !== "monthly").map(s => <History key={s.id} strategy={s} trades={histories[s.id] || []} />)}
       {!focused && <p className="catalog-note">Select a model in the table to open its full decision log. The table is the overview; the log is the audit trail.</p>}
     </section>
     <footer><b>Paper validation only.</b> Historical research is not prospective proof. This interface is read-only and cannot place orders.</footer>
