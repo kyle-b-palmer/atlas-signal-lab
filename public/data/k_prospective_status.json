@@ -2,7 +2,7 @@
   "strategy": "K \u00b7 Confirmed abnormal-volume reclaim",
   "classification": "mixed_temporal_validation",
   "state": "FULLY_OPERATIONAL",
-  "last_successful_run": "2026-08-22T00:19:25.178512+00:00",
+  "last_successful_run": "2026-08-24T05:16:34.946028+00:00",
   "last_session": "2026-08-21",
   "new_signals": 0,
   "pending_entries": 0,
@@ -11,7 +11,7 @@
   "completed_trades": 0,
   "trades_remaining": 100,
   "calendar_gate_date": "2027-05-17",
-  "days_remaining": 269,
+  "days_remaining": 266,
   "eligible": false,
   "aggregate_results_locked": true
 }
