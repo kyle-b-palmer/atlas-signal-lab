@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-26T00:19:22.584002+00:00",
+  "generatedAt": "2026-08-27T00:20:21.575923+00:00",
   "modelId": "P8_PERSISTENT_MEGACAP_MOMENTUM_PROSPECTIVE_V1",
   "label": "P8 · Persistent mega-cap momentum",
   "short": "P8",
@@ -10,7 +10,7 @@
   "state": "WAITING_FOR_FIRST_MONTH_END",
   "firstSignalDate": "2026-08-31",
   "firstEntryDate": "2026-09-01",
-  "lastSession": "2026-08-25",
+  "lastSession": "2026-08-26",
   "signal": "Month-end close",
   "entry": "Next regular open",
   "exit": "Next monthly open",
