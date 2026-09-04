@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-27T00:20:21.575923+00:00",
+  "generatedAt": "2026-09-04T22:31:20.966805+00:00",
   "modelId": "P8_PERSISTENT_MEGACAP_MOMENTUM_PROSPECTIVE_V1",
   "label": "P8 · Persistent mega-cap momentum",
   "short": "P8",
@@ -7,10 +7,10 @@
   "validated": false,
   "paperOnly": true,
   "liveOrdersAllowed": false,
-  "state": "WAITING_FOR_FIRST_MONTH_END",
+  "state": "FAILED_SAFE",
   "firstSignalDate": "2026-08-31",
   "firstEntryDate": "2026-09-01",
-  "lastSession": "2026-08-26",
+  "lastSession": "2026-09-04",
   "signal": "Month-end close",
   "entry": "Next regular open",
   "exit": "Next monthly open",
@@ -49,7 +49,9 @@
   },
   "decisions": [],
   "equity": [],
-  "errors": [],
+  "errors": [
+    "HTTPError: HTTP Error 400: Bad Request"
+  ],
   "explanation": [
     "At each month-end, ranks point-in-time eligible U.S. common-stock issuers by a filing-dated market-cap proxy.",
     "Selects issuers in the market-cap Top 20 that also rank in the top 20% on frozen 126-session Momentum and have remained Top 20 for at least three consecutive months.",
