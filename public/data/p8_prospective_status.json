@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-30T00:19:49.477629+00:00",
+  "generatedAt": "2026-10-30T21:31:43.528757+00:00",
   "modelId": "P8_PERSISTENT_MEGACAP_MOMENTUM_PROSPECTIVE_V1",
   "label": "P8 · Persistent mega-cap momentum",
   "short": "P8",
@@ -50,7 +50,7 @@
   "decisions": [],
   "equity": [],
   "errors": [
-    "HTTPError: HTTP Error 400: Bad Request"
+    "URLError: <urlopen error [Errno 11001] getaddrinfo failed>"
   ],
   "explanation": [
     "At each month-end, ranks point-in-time eligible U.S. common-stock issuers by a filing-dated market-cap proxy.",
